@@ -137,7 +137,7 @@ resource "aws_internet_gateway" "internet_gateway" {
 
 #Create EIP for NAT Gateway
 resource "aws_eip" "nat_gateway_eip" {
-  vpc        = true
+  domain        = "vpc"
   depends_on = [aws_internet_gateway.internet_gateway]
   tags = {
     Name = "demo_igw_eip"
@@ -283,3 +283,22 @@ resource "aws_instance" "web_server" {
     ignore_changes = [security_groups]
   }
 }
+
+module "server_subnet_1" {
+  source    = "./modules/web_server"
+  ami       = data.aws_ami.ubuntu.id
+  subnet_id = aws_subnet.public_subnets["public_subnet_1"].id
+  security_groups = [
+    aws_security_group.vpc-ping.id,
+    aws_security_group.ingress-ssh.id,
+    aws_security_group.vpc-web.id
+  ]
+}
+
+output "public_ip_server_subnet_1" {
+  value = module.server_subnet_1.public_ip
+}
+output "public_dns_subnet_1" {
+  value = module.server_subnet_1.public_dns
+}
+
