@@ -1,4 +1,9 @@
 terraform {
+  backend "s3" {
+    bucket = "my-terraform-state-tjp"
+    key    = "terraform/mystate"
+    region = "us-east-1"
+  }
   required_version = ">= 1.0.0"
   required_providers {
     aws = {
