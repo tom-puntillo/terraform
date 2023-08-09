@@ -52,3 +52,8 @@ variable "environment" {
   type        = string
   default     = true
 }
+
+variable "phone_number" {
+  type      = string
+  sensitive = true
+}
