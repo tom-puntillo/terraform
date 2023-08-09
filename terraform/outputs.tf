@@ -23,6 +23,11 @@ output "public_ip" {
 }
 
 output "ec2_instance_arn" {
-value = aws_instance.web_server.arn
-sensitive = true
+  value     = aws_instance.web_server.arn
+  sensitive = true
+}
+
+output "phone_number" {
+  value     = var.phone_number
+  sensitive = true
 }
