@@ -335,7 +335,8 @@ module "server_subnet_1" {
   security_groups = [
     aws_security_group.vpc-ping.id,
     aws_security_group.ingress-ssh.id,
-    aws_security_group.vpc-web.id
+    aws_security_group.vpc-web.id,
+    aws_security_group.main.id
   ]
 }
 
@@ -361,6 +362,28 @@ resource "aws_instance" "web_server_2" {
   tags = {
     Name = "Web EC2 Server 2"
   }
+}
+
+
+resource "aws_security_group" "main" {
+  name   = "core-sg-global"
+  vpc_id = aws_vpc.vpc.id
+  dynamic "ingress" {
+    for_each = var.web_ingress
+    content {
+      description = ingress.value.description
+      from_port   = ingress.value.port
+      to_port     = ingress.value.port
+      protocol    = ingress.value.protocol
+      cidr_blocks = ingress.value.cidr_blocks
+    }
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  #  prevent_destroy = true
+  }
+
 }
 
 output "data-bucket-arn" {
