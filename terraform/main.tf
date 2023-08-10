@@ -29,18 +29,45 @@ locals {
 locals {
   # Common tags to be assigned to all resources
   common_tags = {
-    Name      = local.server_name
-    Owner     = local.team
-    App       = local.application
-    Service   = local.service_name
-    AppTeam   = local.app_team
-    CreatedBy = local.createdby
+    Name      = lower(local.server_name)
+    Owner     = lower(local.team)
+    App       = lower(local.application)
+    Service   = lower(local.service_name)
+    AppTeam   = lower(local.app_team)
+    CreatedBy = lower(local.createdby)
   }
+}
+
+locals {
+  maximum = max(var.num_1, var.num_2, var.num_3)
+  minimum = min(var.num_1, var.num_2, var.num_3, 44, 20)
 }
 
 #Retrieve the list of AZs in the current AWS region
 data "aws_availability_zones" "available" {}
 data "aws_region" "current" {}
+
+data "aws_s3_bucket" "data_bucket" {
+  bucket = "tommy-data-lookup-bucket020522"
+}
+
+resource "aws_iam_policy" "policy" {
+  name        = "data_bucket_policy"
+  description = "Allow access to my bucket"
+  policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "s3:Get*",
+          "s3:List*"
+        ],
+        "Resource" : "${data.aws_s3_bucket.data_bucket.arn}"
+      }
+    ]
+  })
+}
 
 # Terraform Data Block - Lookup Ubuntu 20.04
 data "aws_ami" "ubuntu" {
@@ -65,9 +92,9 @@ resource "aws_vpc" "vpc" {
   cidr_block = var.vpc_cidr
 
   tags = {
-    Name        = var.vpc_name
-    Environment = "test-dev"
-    Terraform   = "true"
+    Name        = upper(var.vpc_name)
+    Environment = upper(var.environment)
+    Terraform   = upper("true")
     Region      = data.aws_region.current.name
 
   }
@@ -334,4 +361,21 @@ resource "aws_instance" "web_server_2" {
   tags = {
     Name = "Web EC2 Server 2"
   }
+}
+
+output "data-bucket-arn" {
+  value = data.aws_s3_bucket.data_bucket.arn
+}
+output "data-bucket-domain-name" {
+  value = data.aws_s3_bucket.data_bucket.bucket_domain_name
+}
+output "data-bucket-region" {
+  value = "The ${data.aws_s3_bucket.data_bucket.id} bucket is located in ${data.aws_s3_bucket.data_bucket.region}"
+}
+
+output "max_value" {
+  value = local.maximum
+}
+output "min_value" {
+  value = local.minimum
 }
