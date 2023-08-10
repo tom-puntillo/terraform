@@ -27,7 +27,7 @@ output "ec2_instance_arn" {
   sensitive = true
 }
 
-output "phone_number" {
+/*output "phone_number" {
   value     = var.phone_number
   sensitive = true
-}
+}*/
