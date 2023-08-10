@@ -187,10 +187,10 @@ resource "aws_subnet" "variables-subnet" {
 resource "tls_private_key" "generated" {
   algorithm = "RSA"
 }
-resource "local_file" "private_key_pem" {
+/*resource "local_file" "private_key_pem" {
   content  = tls_private_key.generated.private_key_pem
   filename = "MyAWSKey.pem"
-}
+}*/
 
 resource "aws_key_pair" "generated" {
   key_name   = "MyAWSKey"
@@ -284,9 +284,9 @@ resource "aws_instance" "web_server" {
   }
 
   # Leave the first part of the block unchanged and create our `local-exec` provisioner
-  provisioner "local-exec" {
+  /* provisioner "local-exec" {
     command = "chmod 600 ${local_file.private_key_pem.filename}"
-  }
+  }*/
   provisioner "remote-exec" {
     inline = [
       "sudo rm -rf /tmp",
@@ -310,6 +310,13 @@ module "server_subnet_1" {
     aws_security_group.ingress-ssh.id,
     aws_security_group.vpc-web.id
   ]
+}
+
+resource "aws_subnet" "list_subnet" {
+  for_each          = var.env
+  vpc_id            = aws_vpc.vpc.id
+  cidr_block        = each.value.ip
+  availability_zone = each.value.az
 }
 
 output "public_ip_server_subnet_1" {
